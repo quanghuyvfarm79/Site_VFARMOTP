@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"regexp"
 
 	"github.com/hibiken/asynq"
 	"github.com/quanghuyvfarm79/vframotp/internal/model"
@@ -12,6 +13,8 @@ import (
 	"github.com/quanghuyvfarm79/vframotp/internal/repository"
 	"github.com/quanghuyvfarm79/vframotp/pkg/provider"
 )
+
+var otpRegexPhone = regexp.MustCompile(`\d{4,8}`)
 
 type GetPhoneHandler struct {
 	txRepo        *repository.TransactionRepo
@@ -92,6 +95,18 @@ func (h *GetPhoneHandler) Handle(ctx context.Context, t *asynq.Task) error {
 	// Legacy fallback: if no request_id, use phone
 	if requestID == "" {
 		requestID = phone
+	}
+
+	// Some providers return OTP immediately in the initial response
+	if p.KeyOtp != "" {
+		otpRaw := provider.ExtractPath(resp, p.KeyOtp)
+		if match := otpRegexPhone.FindString(otpRaw); match != "" {
+			log.Printf("[GetPhone] tx %d got OTP immediately in initial response: %s", tx.ID, match)
+			if err := h.txRepo.SetPhone(tx.ID, phone, requestID, model.StatusWaitingOTP); err != nil {
+				return err
+			}
+			return h.txRepo.SetOTP(tx.ID, match, model.StatusSuccess)
+		}
 	}
 
 	if err := h.txRepo.SetPhone(tx.ID, phone, requestID, model.StatusWaitingOTP); err != nil {
