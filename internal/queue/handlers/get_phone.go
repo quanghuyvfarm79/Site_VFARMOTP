@@ -97,11 +97,16 @@ func (h *GetPhoneHandler) Handle(ctx context.Context, t *asynq.Task) error {
 		requestID = phone
 	}
 
-	// Some providers return OTP immediately in the initial response
-	if p.KeyOtp != "" {
-		otpRaw := provider.ExtractPath(resp, p.KeyOtp)
+	// Some providers return OTP immediately in the initial response.
+	// Check key_otp first, then fallback to common field names "otp" and "data".
+	otpCandidates := []string{p.KeyOtp, "otp", "data"}
+	for _, key := range otpCandidates {
+		if key == "" {
+			continue
+		}
+		otpRaw := provider.ExtractPath(resp, key)
 		if match := otpRegexPhone.FindString(otpRaw); match != "" {
-			log.Printf("[GetPhone] tx %d got OTP immediately in initial response: %s", tx.ID, match)
+			log.Printf("[GetPhone] tx %d got OTP immediately (field=%s): %s", tx.ID, key, match)
 			if err := h.txRepo.SetPhone(tx.ID, phone, requestID, model.StatusWaitingOTP); err != nil {
 				return err
 			}
