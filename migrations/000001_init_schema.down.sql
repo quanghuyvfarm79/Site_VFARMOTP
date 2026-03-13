@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS user_tokens;
+DROP TABLE IF EXISTS phone_list;
+DROP TABLE IF EXISTS balance_logs;
+DROP TABLE IF EXISTS transactions;
+DROP TABLE IF EXISTS providers;
+DROP TABLE IF EXISTS users;

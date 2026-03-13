@@ -1,0 +1,15 @@
+[Unit]
+Description=VFRAMOTP API Server
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=vframotp
+WorkingDirectory=/opt/vframotp
+EnvironmentFile=/opt/vframotp/.env
+ExecStart=/opt/vframotp/bin/api
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

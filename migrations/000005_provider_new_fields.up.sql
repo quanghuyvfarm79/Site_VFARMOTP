@@ -1,0 +1,4 @@
+ALTER TABLE providers
+    ADD COLUMN IF NOT EXISTS key_otp_done   VARCHAR(255) NOT NULL DEFAULT '',
+    ADD COLUMN IF NOT EXISTS allow_renew    BOOLEAN      NOT NULL DEFAULT true,
+    ADD COLUMN IF NOT EXISTS auto_reset_used BOOLEAN     NOT NULL DEFAULT false;
