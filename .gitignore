@@ -4,8 +4,8 @@
 # Go binaries
 bin/
 *.exe
-api
-worker
+/api
+/worker
 
 # Frontend
 frontend/node_modules/
