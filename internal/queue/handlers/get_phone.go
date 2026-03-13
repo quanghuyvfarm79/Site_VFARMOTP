@@ -80,6 +80,10 @@ func (h *GetPhoneHandler) Handle(ctx context.Context, t *asynq.Task) error {
 	}
 
 	phone := provider.ExtractPath(resp, p.KeyPhone)
+	// UsePhoneList: phone already known from the list, response may not echo it back
+	if phone == "" && claimedPhone != "" {
+		phone = claimedPhone
+	}
 	requestID := provider.ExtractPath(resp, p.KeyReqID)
 
 	if phone == "" {
